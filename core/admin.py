@@ -128,7 +128,8 @@ admin.site.login_form = LimiteSessoesAuthenticationForm
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Relatório PDF de vendas
-# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────#
+#
 
 def gerar_relatorio_pdf(modeladmin, request, queryset):
     queryset = queryset.prefetch_related('itens')
