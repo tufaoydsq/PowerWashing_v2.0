@@ -74,7 +74,7 @@ DOMINIO_BASE = "https://lavandaria-production.up.railway.app"
 API_URL = 'https://api.mozesms.com/v2/sms/bulk'
 BEARER_TOKEN = 'Bearer 2374:zKNUpX-J4dao9-VEi60O-UeNqdN'
 SENDER_ID = "POWERWASH"
-LIMITE_SESSOES_SIMULTANEAS = 10
+LIMITE_SESSOES_SIMULTANEAS = 100
 
 
 def _coalesce_sum(field: str):
