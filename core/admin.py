@@ -34,8 +34,6 @@ from django.shortcuts import redirect
 from django.conf import settings
 from django.contrib.admin.forms import AdminAuthenticationForm
 from django.contrib.sessions.models import Session
-from django.contrib.auth.signals import user_logged_in
-from django.dispatch import receiver
 
 from unfold.admin import ModelAdmin
 
@@ -76,7 +74,7 @@ DOMINIO_BASE = "https://lavandaria-production.up.railway.app"
 API_URL = 'https://api.mozesms.com/v2/sms/bulk'
 BEARER_TOKEN = 'Bearer 2374:zKNUpX-J4dao9-VEi60O-UeNqdN'
 SENDER_ID = "POWERWASH"
-LIMITE_SESSOES_SIMULTANEAS = 5
+LIMITE_SESSOES_SIMULTANEAS = 10
 
 
 def _coalesce_sum(field: str):
@@ -119,29 +117,13 @@ class LimiteSessoesAuthenticationForm(AdminAuthenticationForm):
 
         if total_ativas >= LIMITE_SESSOES_SIMULTANEAS:
             raise django_forms.ValidationError(
-                "⚠️ Lembrete: verifique se o pagamento da licenças anuais das maquinas  "
-            "está em dia (licença de máquinas e atualizações)",
+                "...",
                 code='limite_sessoes',
                 params={'limite': LIMITE_SESSOES_SIMULTANEAS},
             )
 
 
 admin.site.login_form = LimiteSessoesAuthenticationForm
-
-
-@receiver(user_logged_in)
-def avisar_verificacao_licenca(sender, request, user, **kwargs):
-    """
-    Mostra um aviso logo após o login, lembrando de verificar se o
-    pagamento das licenças anuais do sistema (máquinas licenciadas
-    e atualizações) está em dia.
-    """
-    if user.is_staff:
-        messages.warning(
-            request,
-            "⚠️ Lembrete: verifique se o pagamento da licenças anuais das maquinas  "
-            "está em dia (licença de máquinas e atualizações)."
-        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -580,8 +562,7 @@ class GroupAdmin(BaseGroupAdmin, ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(Lavandaria)
 class LavandariaAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+
     list_display = ('nome', 'endereco', 'telefone', 'criado_em')
     search_fields = ('nome', 'telefone')
     list_filter = ('criado_em',)
@@ -603,8 +584,7 @@ class LavandariaAdmin(ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(Cliente)
 class ClienteAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+
     list_display = ('id', 'nome', 'telefone', 'endereco', 'pontos')
     search_fields = ('nome', 'telefone')
 
@@ -630,8 +610,7 @@ class ClienteAdmin(ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(Funcionario)
 class FuncionarioAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+
     list_display = ('user', 'lavandaria', 'grupo', 'telefone')
     search_fields = ('user__username', 'telefone', 'lavandaria__nome')
     list_filter = ('grupo',)
@@ -650,8 +629,7 @@ class ItemServicoAdmin(ModelAdmin, ImportExportModelAdmin):
     list_display = ('nome', 'preco_base', 'disponivel')
     search_fields = ('nome',)
     list_filter = ('disponivel',)
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -713,8 +691,7 @@ class PedidoAdminForm(django_forms.ModelForm):
 
 @admin.register(Pedido)
 class PedidoAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+
     form = PedidoAdminForm
 
     list_display = (
@@ -902,8 +879,7 @@ class PedidoAdmin(ModelAdmin, ImportExportModelAdmin):
 
 @admin.register(ItemPedido)
 class ItemPedidoAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+
     list_display = ('pedido', 'item_de_servico', 'quantidade', 'preco_total')
     search_fields = ('pedido__id', 'item_de_servico__nome')
     list_filter = ('servico',)
@@ -968,8 +944,7 @@ def _saldo(pedido: Pedido) -> Decimal:
 
 @admin.register(PagamentoPedido)
 class PagamentoPedidoAdmin(ModelAdmin, ImportExportModelAdmin):
-    import_form_class = ImportForm
-    export_form_class = ExportForm
+    
     list_display = ("id", "pedido", "valor", "metodo_pagamento", "pago_em", "criado_por")
     list_filter = (
         "metodo_pagamento",
