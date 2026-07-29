@@ -74,7 +74,7 @@ DOMINIO_BASE = "https://lavandaria-production.up.railway.app"
 API_URL = 'https://api.mozesms.com/v2/sms/bulk'
 BEARER_TOKEN = 'Bearer 2374:zKNUpX-J4dao9-VEi60O-UeNqdN'
 SENDER_ID = "POWERWASH"
-LIMITE_SESSOES_SIMULTANEAS = 100
+LIMITE_SESSOES_SIMULTANEAS = 5
 
 
 def _coalesce_sum(field: str):
@@ -609,7 +609,7 @@ class ClienteAdmin(ModelAdmin, ImportExportModelAdmin):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @admin.register(Funcionario)
-class FuncionarioAdmin(ModelAdmin, ImportExportModelAdmin):
+class FuncionarioAdmin(ModelAdmin):
 
     list_display = ('user', 'lavandaria', 'grupo', 'telefone')
     search_fields = ('user__username', 'telefone', 'lavandaria__nome')
@@ -625,7 +625,7 @@ class FuncionarioAdmin(ModelAdmin, ImportExportModelAdmin):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @admin.register(ItemServico)
-class ItemServicoAdmin(ModelAdmin, ImportExportModelAdmin):
+class ItemServicoAdmin(ModelAdmin):
     list_display = ('nome', 'preco_base', 'disponivel')
     search_fields = ('nome',)
     list_filter = ('disponivel',)
@@ -690,7 +690,7 @@ class PedidoAdminForm(django_forms.ModelForm):
 
 
 @admin.register(Pedido)
-class PedidoAdmin(ModelAdmin, ImportExportModelAdmin):
+class PedidoAdmin(ModelAdmin):
 
     form = PedidoAdminForm
 
@@ -878,7 +878,7 @@ class PedidoAdmin(ModelAdmin, ImportExportModelAdmin):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @admin.register(ItemPedido)
-class ItemPedidoAdmin(ModelAdmin, ImportExportModelAdmin):
+class ItemPedidoAdmin(ModelAdmin):
 
     list_display = ('pedido', 'item_de_servico', 'quantidade', 'preco_total')
     search_fields = ('pedido__id', 'item_de_servico__nome')
@@ -943,8 +943,8 @@ def _saldo(pedido: Pedido) -> Decimal:
 
 
 @admin.register(PagamentoPedido)
-class PagamentoPedidoAdmin(ModelAdmin, ImportExportModelAdmin):
-    
+class PagamentoPedidoAdmin(ModelAdmin):
+
     list_display = ("id", "pedido", "valor", "metodo_pagamento", "pago_em", "criado_por")
     list_filter = (
         "metodo_pagamento",
