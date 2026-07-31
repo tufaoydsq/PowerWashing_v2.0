@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from django.templatetags.static import static
 from django.urls import reverse_lazy
@@ -9,16 +10,27 @@ import dj_database_url
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!)kk^js_66cyvlsn4dog9-4amy%il#u8l+wnju5ec9kdpy8v&^'
+# ==================================================================
+# SEGURANÇA
+# ==================================================================
+# SECURITY WARNING: nunca deixar a secret key em texto simples no código.
+# Definir SECRET_KEY como variável de ambiente no Railway (ou onde fizeres deploy).
+# Localmente, cria um ficheiro .env (NÃO subir para o git) ou exporta no terminal.
+SECRET_KEY = os.environ.get(
+    'SECRET_KEY',
+    'django-insecure-!)kk^js_66cyvlsn4dog9-4amy%il#u8l+wnju5ec9kdpy8v&^'  # usado só se não houver env var (dev local)
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Por padrão False; só fica True se definires DEBUG=True no ambiente local.
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    "lavandaria-production.up.railway.app",
+    "laudrybox.up.railway.app",
+    "localhost",
+    "127.0.0.1",
+]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://lavandaria-production.up.railway.app",
@@ -58,8 +70,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'core.middleware.AvisoLicencaMiddleware',
 ]
 
 ROOT_URLCONF = 'powerWashing.urls'
@@ -94,11 +104,9 @@ DATABASES = {
     }
 }
 
-POSTGRES_LOCALLY = True
-if not DEBUG or POSTGRES_LOCALLY:
-    # DATABASES['default'] = dj_database_url.parse('postgresql://postgres:BhBJVGJptzwEKPrbZbyTuvumiSsflzoa@junction.proxy.rlwy.net:38981/railway')
-    DATABASES['default'] = dj_database_url.parse(
-        'postgresql://postgres:ivnCkqDIIZAOhpaRUQfvDryCvtjuMlir@turntable.proxy.rlwy.net:55561/railway')
+# POSTGRES_LOCALLY =False
+# if not DEBUG or POSTGRES_LOCALLY:
+#     DATABASES['default'] = dj_database_url.parse(os.environ.get('DATABASE_URL', ''))
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -106,8 +114,10 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'yuransnts@gmail.com'
-EMAIL_HOST_PASSWORD = 'abwovgpxowxovqxs'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'yuransnts@gmail.com')
+# SECURITY WARNING: nunca deixar a senha/app-password em texto simples.
+# Definir EMAIL_HOST_PASSWORD como variável de ambiente.
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = 'Power Washing <yuransnts@gmail.com>'
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -123,6 +133,24 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+# ==================================================================
+# SESSÃO / LOGOUT AUTOMÁTICO
+# ==================================================================
+# Antes: nenhuma destas estava definida -> Django usava o padrão de
+# 2 semanas (1209600s) e a sessão sobrevivia ao fechar o navegador.
+#
+# Agora: logout automático após 30 minutos de INATIVIDADE (não um
+# tempo fixo desde o login) - mais apropriado para um sistema com
+# faturas, pagamentos e cobrança de licenças.
+SESSION_COOKIE_AGE = 1800            # 30 minutos, em segundos
+SESSION_SAVE_EVERY_REQUEST = True    # renova o tempo a cada pedido -> mede inatividade
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # fecha a sessão ao fechar o navegador
+
+# Extra: cookies de sessão só via HTTPS em produção
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 
 # Internationalization
@@ -243,8 +271,3 @@ UNFOLD = {
 
 
 }
-
-
-
-
-
